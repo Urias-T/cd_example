@@ -1,8 +1,8 @@
-from flask import Flask
+from flask import Flask, request, jsonify
 from datetime import datetime
 app = Flask(__name__)
 
-data = {
+crate = {
     "drinks": [
         {
             "name": "Grape", 
@@ -22,13 +22,27 @@ data = {
     ]
 } 
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def index():
-        return "Welcome To My Drinks API"
+        return jsonify({"message":"Welcome To My Drinks API"}), 200
 
-@app.route('/drinks')
+@app.route('/drinks', methods=["GET"])
 def get_drinks():
-    return data
+    return crate
+
+@app.route("/description", methods=["GET"])
+def get_description():
+    data = request.get_json()
+    requested_drink = data.get("requested_drink")
+
+    if not requested_drink:
+        return jsonify({"error": "Provide drink to check description"}), 400
+    
+    for drink in crate["drinks"]:
+        if drink["name"] == requested_drink:
+            return jsonify({"description":drink["description"]}), 200
+        
+        return jsonify({"error": "The drink you've requested is not available at this time."}), 404
 
 
 if __name__ == "__main__":
